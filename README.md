@@ -86,7 +86,7 @@ A comprehensive Enterprise Resource Planning system built for educational instit
 ## 🌐 Deployment
 
 The application is deployed on Vercel for easy access:
-- [Visit Live Demo](https://sgrru-erp.vercel.app)
+- [Visit Live Demo]([https://sgrru-erp.vercel.app](https://college-erp-lovat.vercel.app/))
 
 ## 🔮 Future Enhancements
 
