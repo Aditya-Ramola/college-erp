@@ -184,7 +184,7 @@ const Login = () => {
             <span>{new Date().getFullYear()} SGRRU-ERP. All rights reserved.</span>
           </div>
           <div className="flex items-center text-sm">
-            <span>Designed & Developed by <span className="font-semibold text-white">Anurag Bhatt</span></span>
+            <span>Designed & Developed by <span className="font-semibold text-white">Anurag Bhatt, Astha, Anshuman, Arti</span></span>
           </div>
         </div>
       </motion.div>
