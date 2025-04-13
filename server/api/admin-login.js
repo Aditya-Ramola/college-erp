@@ -1,12 +1,12 @@
-import express from "express";
-import bodyParser from "body-parser";
 import mongoose from "mongoose";
-import cors from "cors";
-import dotenv from "dotenv";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import dotenv from "dotenv";
 
-// Get Admin model 
+// Load env variables
+dotenv.config();
+
+// Setup Admin model
 let Admin;
 try {
   Admin = mongoose.model('Admin');
@@ -29,47 +29,10 @@ try {
   Admin = mongoose.model('Admin', adminSchema);
 }
 
-// Load environment variables
-dotenv.config();
-
-// Setup Express
-const app = express();
-
-// Direct CORS handling for preflight OPTIONS request
-app.options("*", (req, res) => {
-  console.log("Handling OPTIONS preflight in admin-login");
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
-  res.setHeader('Access-Control-Max-Age', '86400'); // 24 hours
-  res.status(204).end();
-});
-
-// Express middleware
-app.use((req, res, next) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
-  next();
-});
-
-// CORS middleware
-app.use(cors({
-  origin: '*',
-  methods: ['POST', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-  credentials: true
-}));
-
-// Body parsing middleware
-app.use(bodyParser.json());
-
 // Connect to MongoDB
 let isConnected = false;
 const connectToDatabase = async () => {
-  if (isConnected) {
-    return;
-  }
+  if (isConnected) return;
   
   try {
     await mongoose.connect(process.env.CONNECTION_URL, {
@@ -84,66 +47,25 @@ const connectToDatabase = async () => {
   }
 };
 
-// Login handler
-const adminLogin = async (req, res) => {
-  console.log("Admin login request received:", req.body);
-  
-  const { username, password } = req.body;
-  
-  try {
-    const existingAdmin = await Admin.findOne({ username });
-    
-    if (!existingAdmin) {
-      console.log("Admin not found:", username);
-      return res.status(404).json({ message: "Admin doesn't exist" });
-    }
-    
-    const isPasswordCorrect = await bcrypt.compare(
-      password,
-      existingAdmin.password
-    );
-    
-    if (!isPasswordCorrect) {
-      console.log("Invalid password for:", username);
-      return res.status(400).json({ message: "Invalid credentials" });
-    }
-    
-    const token = jwt.sign(
-      {
-        username: existingAdmin.username,
-        id: existingAdmin._id,
-        role: "admin",
-      },
-      process.env.JWT_SECRET,
-      { expiresIn: "1h" }
-    );
-    
-    console.log("Admin login successful:", username);
-    res.status(200).json({
-      result: existingAdmin,
-      token,
-    });
-  } catch (error) {
-    console.error("Login error:", error);
-    res.status(500).json({ message: "Something went wrong", error: error.message });
-  }
-};
-
-// Routes
-app.post("/api/admin/login", adminLogin);
-
-// Export the serverless handler
+// Serverless handler - direct approach without Express
 export default async function handler(req, res) {
-  console.log("Admin login handler invoked:", req.method, req.url, req.headers.origin);
+  console.log("Admin login handler invoked:", req.method, req.url);
   
-  // Handle CORS preflight request directly
+  // Set CORS headers for all responses
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+  
+  // Handle OPTIONS request
   if (req.method === 'OPTIONS') {
-    console.log("Handling OPTIONS request at serverless level");
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
-    res.setHeader('Access-Control-Max-Age', '86400'); // 24 hours
-    return res.status(204).end();
+    console.log("Handling OPTIONS preflight in admin-login");
+    res.status(200).end();
+    return;
+  }
+  
+  // Only proceed with POST requests
+  if (req.method !== 'POST') {
+    return res.status(405).json({ message: 'Method not allowed' });
   }
   
   // Connect to database
@@ -157,6 +79,55 @@ export default async function handler(req, res) {
     });
   }
   
-  // Pass the request to the Express app
-  return app(req, res);
+  // Parse body for POST request
+  const { username, password } = req.body;
+  console.log("Login attempt for:", username);
+  
+  if (!username || !password) {
+    return res.status(400).json({ message: 'Username and password are required' });
+  }
+  
+  try {
+    // Find admin
+    const existingAdmin = await Admin.findOne({ username });
+    
+    if (!existingAdmin) {
+      console.log("Admin not found:", username);
+      return res.status(404).json({ message: "Admin doesn't exist" });
+    }
+    
+    // Check password
+    const isPasswordCorrect = await bcrypt.compare(
+      password,
+      existingAdmin.password
+    );
+    
+    if (!isPasswordCorrect) {
+      console.log("Invalid password for:", username);
+      return res.status(400).json({ message: "Invalid credentials" });
+    }
+    
+    // Generate token
+    const token = jwt.sign(
+      {
+        username: existingAdmin.username,
+        id: existingAdmin._id,
+        role: "admin",
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" }
+    );
+    
+    console.log("Admin login successful:", username);
+    return res.status(200).json({
+      result: existingAdmin,
+      token,
+    });
+  } catch (error) {
+    console.error("Login error:", error);
+    return res.status(500).json({ 
+      message: "Something went wrong", 
+      error: error.message 
+    });
+  }
 }

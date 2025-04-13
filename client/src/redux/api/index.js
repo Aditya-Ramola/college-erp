@@ -97,9 +97,18 @@ API.interceptors.response.use(
 // Admin login - handle specially with full URL to avoid CORS issues
 export const adminSignIn = (formData) => {
   console.log("Admin login attempt with:", formData.username);
-  return axios.post(`${baseURL}/api/admin/login`, formData, {
+  return axios({
+    method: 'post',
+    url: `${baseURL}/api/admin/login`,
+    data: formData,
     headers: {
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    },
+    mode: 'cors',
+    withCredentials: false,
+    validateStatus: function (status) {
+      return status >= 200 && status < 600; // Allow all status codes to be handled without error
     }
   });
 };
