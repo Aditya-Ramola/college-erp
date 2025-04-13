@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { getNotice } from "../../redux/actions/adminActions";
 import {
@@ -21,23 +21,25 @@ const StudentHome = () => {
 
   const dispatch = useDispatch();
   useEffect(() => {
-    dispatch(getSubject(user.result.department, user.result.year));
-    dispatch(
-      getTestResult(
-        user.result.department,
-        user.result.year,
-        user.result.section
-      )
-    );
-    dispatch(
-      getAttendance(
-        user.result.department,
-        user.result.year,
-        user.result.section
-      )
-    );
+    if (student && student.result) {
+      dispatch(getSubject(student.result.department, student.result.year));
+      dispatch(
+        getTestResult(
+          student.result.department,
+          student.result.year,
+          student.result.section
+        )
+      );
+      dispatch(
+        getAttendance(
+          student.result.department,
+          student.result.year,
+          student.result.section
+        )
+      );
+    }
     dispatch(getNotice());
-  }, [dispatch]);
+  }, [dispatch, student]);
 
   if (!student) {
     return <Navigate to="/login/studentLogin" />;
