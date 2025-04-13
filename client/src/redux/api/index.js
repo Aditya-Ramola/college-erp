@@ -6,7 +6,7 @@ let baseURL = process.env.REACT_APP_API_URL;
 // If API URL is not set, use relative URLs in production or localhost in development
 if (!baseURL) {
   baseURL = process.env.NODE_ENV === 'production' 
-    ? '/api' // Use relative path in production
+    ? '' // Empty for production since we'll use full paths
     : 'http://localhost:5001'; // Use localhost in development
 }
 
@@ -44,6 +44,7 @@ API.interceptors.response.use(
     return response;
   },
   (error) => {
+    console.error("API Error:", error);
     // Handle token expiration
     if (error.response && error.response.status === 401) {
       if (error.response.data.message === "Authentication failed. Token expired.") {

@@ -20,7 +20,21 @@ const app = express();
 // Security middleware
 app.use(helmet({
   contentSecurityPolicy: false,  // Disable CSP for simplicity in Vercel environment
+  crossOriginResourcePolicy: false,
 }));
+
+// CORS configuration - very important for Vercel!
+app.use(cors({
+  origin: '*', // Allow all origins for now
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
+}));
+
+// Handle OPTIONS requests for CORS preflight
+app.options('*', (req, res) => {
+  res.status(200).end();
+});
 
 // Rate limiting
 const limiter = rateLimit({
@@ -33,21 +47,6 @@ app.use("/api/", limiter);
 // Body parsing middleware
 app.use(bodyParser.json({ limit: "30mb", extended: true }));
 app.use(bodyParser.urlencoded({ limit: "30mb", extended: true }));
-
-// CORS configuration
-const corsOptions = {
-  origin: process.env.NODE_ENV === "production" 
-    ? [
-        "https://college-erp-e3je.vercel.app", 
-        "https://sgrru-erp.vercel.app",
-        process.env.FRONTEND_URL
-      ].filter(Boolean)
-    : "http://localhost:3000",
-  methods: ["GET", "POST", "PUT", "DELETE"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-  credentials: true
-};
-app.use(cors(corsOptions));
 
 // Connect to MongoDB
 let isConnected = false;
@@ -91,6 +90,7 @@ app.get("/api/health", (req, res) => {
 
 // 404 handler
 app.use((req, res) => {
+  console.log(`Route not found: ${req.method} ${req.url}`);
   res.status(404).json({ message: "Route not found" });
 });
 
