@@ -2,6 +2,12 @@ import axios from "axios";
 
 // Determine the API base URL based on environment
 let baseURL = process.env.REACT_APP_API_URL;
+console.log("API Base URL:", baseURL); // Debug log
+
+// Clean up the URL to ensure it doesn't have trailing slashes
+if (baseURL && baseURL.endsWith('/')) {
+  baseURL = baseURL.slice(0, -1);
+}
 
 // If API URL is not set, use relative URLs in production or localhost in development
 if (!baseURL) {
@@ -11,7 +17,24 @@ if (!baseURL) {
 }
 
 // Create API instance with environment variable for server URL
-const API = axios.create({ baseURL });
+const API = axios.create({ 
+  baseURL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  withCredentials: false // Important for CORS
+});
+
+// Debug requests
+API.interceptors.request.use(
+  (config) => {
+    console.log(`Making ${config.method.toUpperCase()} request to: ${config.baseURL}${config.url}`);
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
 
 /**
  * Request interceptor to add authorization header with JWT token
@@ -44,7 +67,10 @@ API.interceptors.response.use(
     return response;
   },
   (error) => {
-    console.error("API Error:", error);
+    console.error("API Error:", error.message);
+    console.error("Response Status:", error.response?.status);
+    console.error("Response Data:", error.response?.data);
+    
     // Handle token expiration
     if (error.response && error.response.status === 401) {
       if (error.response.data.message === "Authentication failed. Token expired.") {
