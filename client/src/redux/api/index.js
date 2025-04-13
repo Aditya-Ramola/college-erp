@@ -98,7 +98,6 @@ API.interceptors.response.use(
 export const adminSignIn = (formData) => {
   console.log("Admin login attempt with:", formData.username);
   
-  // Try the direct login endpoint with specific CORS handling
   return axios({
     method: 'post',
     url: `${baseURL}/api/admin/login`,
@@ -108,12 +107,28 @@ export const adminSignIn = (formData) => {
       'Accept': 'application/json',
       'Origin': window.location.origin
     },
-    mode: 'cors',
     withCredentials: false
-  }).catch(error => {
-    console.log("First login attempt failed, trying proxy endpoint:", error.message);
+  })
+  .then(response => {
+    console.log("Login successful:", response.data);
+    return response;
+  })
+  .catch(error => {
+    console.error("Login error details:", error);
     
-    // If that fails, try the proxy endpoint
+    // Log more detailed error information
+    if (error.response) {
+      console.error("Response data:", error.response.data);
+      console.error("Response status:", error.response.status);
+      console.error("Response headers:", error.response.headers);
+    } else if (error.request) {
+      console.error("Request made but no response received");
+    } else {
+      console.error("Error setting up request:", error.message);
+    }
+    
+    // Try the proxy endpoint as a fallback
+    console.log("Trying proxy endpoint as fallback");
     return axios({
       method: 'post',
       url: `${baseURL}/api/proxy/admin/login`,
@@ -123,7 +138,6 @@ export const adminSignIn = (formData) => {
         'Accept': 'application/json',
         'Origin': window.location.origin
       },
-      mode: 'cors',
       withCredentials: false
     });
   });

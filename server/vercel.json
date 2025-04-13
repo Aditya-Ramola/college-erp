@@ -2,26 +2,11 @@
   "version": 2,
   "builds": [
     {
-      "src": "api/*.js",
+      "src": "api/index.js",
       "use": "@vercel/node"
     }
   ],
   "routes": [
-    {
-      "src": "/api/debug",
-      "dest": "/api/debug.js",
-      "methods": ["GET", "POST", "OPTIONS"]
-    },
-    {
-      "src": "/api/proxy/admin/login",
-      "dest": "/api/proxy-admin-login.js",
-      "methods": ["POST", "OPTIONS"]
-    },
-    {
-      "src": "/api/admin/login",
-      "dest": "/api/admin-login.js",
-      "methods": ["POST", "OPTIONS"]
-    },
     {
       "src": "/api/(.*)",
       "dest": "/api/index.js"
