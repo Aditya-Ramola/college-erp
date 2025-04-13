@@ -35,13 +35,33 @@ dotenv.config();
 // Setup Express
 const app = express();
 
-// Middlewares
+// Direct CORS handling for preflight OPTIONS request
+app.options("*", (req, res) => {
+  console.log("Handling OPTIONS preflight in admin-login");
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+  res.setHeader('Access-Control-Max-Age', '86400'); // 24 hours
+  res.status(204).end();
+});
+
+// Express middleware
+app.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+  next();
+});
+
+// CORS middleware
 app.use(cors({
   origin: '*',
   methods: ['POST', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  credentials: true
 }));
 
+// Body parsing middleware
 app.use(bodyParser.json());
 
 // Connect to MongoDB
@@ -112,15 +132,19 @@ const adminLogin = async (req, res) => {
 // Routes
 app.post("/api/admin/login", adminLogin);
 
-// Handle OPTIONS for preflight CORS
-app.options("*", (req, res) => {
-  console.log("Handling OPTIONS request in admin-login");
-  res.status(200).end();
-});
-
 // Export the serverless handler
 export default async function handler(req, res) {
-  console.log("Admin login handler invoked:", req.method, req.url);
+  console.log("Admin login handler invoked:", req.method, req.url, req.headers.origin);
+  
+  // Handle CORS preflight request directly
+  if (req.method === 'OPTIONS') {
+    console.log("Handling OPTIONS request at serverless level");
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+    res.setHeader('Access-Control-Max-Age', '86400'); // 24 hours
+    return res.status(204).end();
+  }
   
   // Connect to database
   try {

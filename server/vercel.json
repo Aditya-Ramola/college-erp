@@ -10,6 +10,10 @@
       "use": "@vercel/node"
     },
     {
+      "src": "api/admin-login-options.js",
+      "use": "@vercel/node"
+    },
+    {
       "src": "api/debug.js",
       "use": "@vercel/node"
     }
@@ -17,8 +21,13 @@
   "routes": [
     {
       "src": "/api/admin/login",
-      "dest": "/api/admin-login.js",
-      "methods": ["POST", "OPTIONS"]
+      "methods": ["OPTIONS"],
+      "dest": "/api/admin-login-options.js"
+    },
+    {
+      "src": "/api/admin/login",
+      "methods": ["POST"],
+      "dest": "/api/admin-login.js"
     },
     {
       "src": "/api/debug",
@@ -33,24 +42,12 @@
   ],
   "headers": [
     {
-      "source": "/(.*)",
+      "source": "/api/(.*)",
       "headers": [
-        {
-          "key": "Access-Control-Allow-Origin",
-          "value": "*"
-        },
-        {
-          "key": "Access-Control-Allow-Methods", 
-          "value": "GET, POST, PUT, DELETE, OPTIONS, PATCH"
-        },
-        {
-          "key": "Access-Control-Allow-Headers",
-          "value": "X-Requested-With, Content-Type, Accept, Authorization"
-        },
-        {
-          "key": "Access-Control-Allow-Credentials",
-          "value": "true"
-        }
+        { "key": "Access-Control-Allow-Credentials", "value": "true" },
+        { "key": "Access-Control-Allow-Origin", "value": "*" },
+        { "key": "Access-Control-Allow-Methods", "value": "GET,OPTIONS,PATCH,DELETE,POST,PUT" },
+        { "key": "Access-Control-Allow-Headers", "value": "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization" }
       ]
     }
   ],

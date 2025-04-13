@@ -29,6 +29,8 @@ const API = axios.create({
 API.interceptors.request.use(
   (config) => {
     console.log(`Making ${config.method.toUpperCase()} request to: ${config.baseURL}${config.url}`);
+    // Make sure we're sending the correct content type for all requests
+    config.headers['Content-Type'] = 'application/json';
     return config;
   },
   (error) => {
@@ -68,8 +70,16 @@ API.interceptors.response.use(
   },
   (error) => {
     console.error("API Error:", error.message);
-    console.error("Response Status:", error.response?.status);
-    console.error("Response Data:", error.response?.data);
+    
+    if (error.response) {
+      console.error("Response Status:", error.response.status);
+      console.error("Response Data:", error.response.data);
+    } else if (error.request) {
+      console.error("Request was made but no response received");
+      console.error("Request:", error.request);
+    } else {
+      console.error("Error setting up request:", error.message);
+    }
     
     // Handle token expiration
     if (error.response && error.response.status === 401) {
@@ -84,10 +94,17 @@ API.interceptors.response.use(
   }
 );
 
-// Admin
+// Admin login - handle specially with full URL to avoid CORS issues
+export const adminSignIn = (formData) => {
+  console.log("Admin login attempt with:", formData.username);
+  return axios.post(`${baseURL}/api/admin/login`, formData, {
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  });
+};
 
-export const adminSignIn = (formData) => API.post("/api/admin/login", formData);
-
+// Rest of the exports
 export const adminUpdatePassword = (updatedPassword) =>
   API.post("/api/admin/updatepassword", updatedPassword);
 
