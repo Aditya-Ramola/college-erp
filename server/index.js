@@ -1,3 +1,6 @@
+// THIS FILE IS ONLY USED FOR LOCAL DEVELOPMENT AND TRADITIONAL HOSTING
+// FOR VERCEL SERVERLESS DEPLOYMENT, SEE /api/index.js
+
 import express from "express";
 import bodyParser from "body-parser";
 import mongoose from "mongoose";
@@ -29,7 +32,11 @@ app.use(bodyParser.urlencoded({ limit: "30mb", extended: true }));
 
 const corsOptions = {
   origin: process.env.NODE_ENV === "production" 
-    ? ["https://yourdomain.com", "https://www.yourdomain.com"] 
+    ? [
+        "https://college-erp-e3je.vercel.app", 
+        "https://sgrru-erp.vercel.app",
+        process.env.FRONTEND_URL
+      ].filter(Boolean)
     : "http://localhost:3000",
   methods: ["GET", "POST", "PUT", "DELETE"],
   allowedHeaders: ["Content-Type", "Authorization"],
