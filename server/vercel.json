@@ -8,6 +8,11 @@
   ],
   "routes": [
     {
+      "src": "/api/proxy/admin/login",
+      "dest": "/api/proxy-admin-login.js",
+      "methods": ["POST", "OPTIONS"]
+    },
+    {
       "src": "/api/admin/login",
       "dest": "/api/admin-login.js",
       "methods": ["POST", "OPTIONS"]
