@@ -21,6 +21,7 @@ import CircularProgress from "@mui/material/CircularProgress";
 import { adminSignIn } from "../../../redux/actions/adminActions";
 import { Helmet } from "react-helmet";
 import { setupPageReloadListener } from "../../../utils/navigation";
+import { SET_ERRORS } from "../../../redux/actionTypes";
 
 const AdminLogin = () => {
   const [formData, setFormData] = useState({
@@ -59,6 +60,12 @@ const AdminLogin = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     setLoading(true);
+    setError({}); // Clear errors when submitting
+    
+    // Clear any existing errors in Redux store
+    dispatch({ type: SET_ERRORS, payload: {} });
+    
+    // Attempt to sign in
     dispatch(
       adminSignIn({ 
         username: formData.username, 
@@ -67,10 +74,33 @@ const AdminLogin = () => {
     );
   };
 
-  // Reset form when errors occur
+  // Update the loading state management
   useEffect(() => {
-    if (store.errors) {
+    // Check the admin auth state from the store
+    const adminAuth = store.admin && store.admin.authData;
+    
+    // If we have auth data, loading should be false
+    if (adminAuth) {
       setLoading(false);
+    }
+    
+    // If we have errors, loading should be false
+    if (Object.keys(store.errors || {}).length > 0) {
+      setLoading(false);
+    }
+  }, [store.admin, store.errors]);
+
+  // Update error handling
+  useEffect(() => {
+    if (store.errors && Object.keys(store.errors).length > 0) {
+      setError(store.errors);
+      // Show toast or alert with error message
+      if (store.errors.message) {
+        // You can add a toast notification here if you have a toast library
+        console.error("Login error:", store.errors.message);
+      }
+    } else {
+      setError({});
     }
   }, [store.errors]);
 

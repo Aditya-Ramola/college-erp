@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useState } from "react";
 import { useDispatch } from "react-redux";
 import { getNotice } from "../../redux/actions/adminActions";
 import {
@@ -6,13 +6,18 @@ import {
   getSubject,
   getTestResult,
 } from "../../redux/actions/studentActions";
+import { Navigate, Outlet } from "react-router-dom";
+import { useSelector } from "react-redux";
+import { Button } from "@mui/material";
+import MenuIcon from "@mui/icons-material/Menu";
 
 import Body from "./Body";
 import Header from "./Header";
 import Sidebar from "./Sidebar";
 
 const StudentHome = () => {
-  const user = JSON.parse(localStorage.getItem("user"));
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const student = useSelector((state) => state.student.student);
 
   const dispatch = useDispatch();
   useEffect(() => {
@@ -34,13 +39,26 @@ const StudentHome = () => {
     dispatch(getNotice());
   }, [dispatch]);
 
+  if (!student) {
+    return <Navigate to="/login/studentLogin" />;
+  }
+
   return (
-    <div className="bg-[#d6d9e0] h-screen flex items-center justify-center">
-      <div className="flex flex-col  bg-[#f4f6fa] h-5/6 w-[95%] rounded-2xl shadow-2xl space-y-6 overflow-y-hidden">
-        <Header />
-        <div className="flex flex-[0.95]">
-          <Sidebar />
-          <Body />
+    <div className="flex h-screen bg-gray-100">
+      <Sidebar isMobileMenuOpen={mobileMenuOpen} setMobileMenuOpen={setMobileMenuOpen} />
+      <div className="flex-1 flex flex-col overflow-hidden">
+        {/* Mobile header with menu button */}
+        <div className="md:hidden bg-white shadow-sm p-2 flex items-center">
+          <Button
+            className="text-gray-700"
+            onClick={() => setMobileMenuOpen(true)}
+          >
+            <MenuIcon />
+          </Button>
+          <h1 className="font-bold text-blue-600 text-lg ml-2">SGRRU-ERP</h1>
+        </div>
+        <div className="flex-1 overflow-y-auto p-4">
+          <Outlet />
         </div>
       </div>
     </div>
