@@ -104,8 +104,7 @@ export const adminSignIn = (formData) => {
     data: formData,
     headers: {
       'Content-Type': 'application/json',
-      'Accept': 'application/json',
-      'Origin': window.location.origin
+      'Accept': 'application/json'
     },
     withCredentials: false
   })
@@ -135,8 +134,7 @@ export const adminSignIn = (formData) => {
       data: formData,
       headers: {
         'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'Origin': window.location.origin
+        'Accept': 'application/json'
       },
       withCredentials: false
     });
@@ -244,8 +242,7 @@ export const testAdminCredentials = (credentials) => {
     data: credentials,
     headers: {
       'Content-Type': 'application/json',
-      'Accept': 'application/json',
-      'Origin': window.location.origin
+      'Accept': 'application/json'
     }
   });
 };
@@ -255,8 +252,7 @@ export const checkApiHealth = () => {
     method: 'get',
     url: `${baseURL}/api/debug`,
     headers: {
-      'Accept': 'application/json',
-      'Origin': window.location.origin
+      'Accept': 'application/json'
     }
   });
 };

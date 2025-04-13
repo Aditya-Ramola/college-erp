@@ -298,50 +298,34 @@ app.use(helmet({
   xssFilter: true
 }));
 
-// CORS setup - configured to be permissive
+// Define allowed origins
 const allowedOrigins = [
   'https://college-erp-4dle.vercel.app',
   'https://college-erp-flame.vercel.app',
   'http://localhost:3000'
 ];
 
-app.use(cors({
-  origin: function(origin, callback) {
-    // Allow requests with no origin (like mobile apps, curl requests)
-    if (!origin) return callback(null, true);
-    
-    if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
-      callback(null, true);
-    } else {
-      // If not allowed origin, still allow but log it
-      console.log(`Origin ${origin} not allowed by CORS`);
-      callback(null, true); // Allow all origins for now
-    }
-  },
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
-  credentials: true,
-  maxAge: 86400 // 24 hours
-}));
-
-// Handle OPTIONS requests explicitly
-app.options('*', (req, res) => {
-  console.log("Handling OPTIONS request");
-  
-  // Get origin from request
+// CORS setup - simplified direct approach
+app.use((req, res, next) => {
   const origin = req.headers.origin;
   
-  // Set appropriate CORS headers based on origin
-  if (origin && allowedOrigins.includes(origin)) {
+  // Always allow the frontend domain
+  if (origin === 'https://college-erp-4dle.vercel.app') {
     res.header('Access-Control-Allow-Origin', origin);
   } else {
+    // For development or testing
     res.header('Access-Control-Allow-Origin', '*');
   }
   
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
   res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin');
   res.header('Access-Control-Allow-Credentials', 'true');
-  res.status(204).end();
+  
+  if (req.method === 'OPTIONS') {
+    return res.status(204).end();
+  }
+  
+  next();
 });
 
 // Body parsing middleware - BEFORE route handlers
@@ -687,6 +671,30 @@ app.use((err, req, res, next) => {
 export default async function handler(req, res) {
   console.log(`Serverless function invoked: ${req.method} ${req.url}`);
   
+  // Set CORS headers first - before anything else
+  // This ensures headers are set even if errors occur later
+  const origin = req.headers.origin;
+  console.log("Request origin:", origin);
+  
+  // Always allow the frontend domain
+  if (origin === 'https://college-erp-4dle.vercel.app') {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  } else {
+    // For development or testing
+    res.setHeader('Access-Control-Allow-Origin', '*');
+  }
+  
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.setHeader('Access-Control-Max-Age', '86400');
+  
+  // Handle OPTIONS method for preflight requests immediately
+  if (req.method === 'OPTIONS') {
+    console.log("Handling OPTIONS request directly in handler");
+    return res.status(204).end();
+  }
+  
   // Connect to database
   try {
     await connectToDatabase();
@@ -696,15 +704,6 @@ export default async function handler(req, res) {
       message: "Database connection failed", 
       error: error.message 
     });
-  }
-  
-  // Handle CORS preflight for all routes
-  if (req.method === 'OPTIONS') {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
-    res.setHeader('Access-Control-Max-Age', '86400');
-    return res.status(204).end();
   }
   
   // Pass the request to the Express app
