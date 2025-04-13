@@ -22,6 +22,9 @@
       ]
     }
   ],
+  "env": {
+    "REACT_APP_API_URL": "https://college-erp-flame.vercel.app"
+  },
   "git": {
     "deploymentEnabled": {
       "main": true
