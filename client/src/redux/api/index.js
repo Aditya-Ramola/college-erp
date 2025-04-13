@@ -94,50 +94,13 @@ API.interceptors.response.use(
   }
 );
 
-// Admin login - handle specially with full URL to avoid CORS issues
+// Admin login - simple, direct approach
 export const adminSignIn = (formData) => {
   console.log("Admin login attempt with:", formData.username);
-  
-  return axios({
-    method: 'post',
-    url: `${baseURL}/api/admin/login`,
-    data: formData,
+  return axios.post(`${baseURL}/api/admin/login`, formData, {
     headers: {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json'
-    },
-    withCredentials: false
-  })
-  .then(response => {
-    console.log("Login successful:", response.data);
-    return response;
-  })
-  .catch(error => {
-    console.error("Login error details:", error);
-    
-    // Log more detailed error information
-    if (error.response) {
-      console.error("Response data:", error.response.data);
-      console.error("Response status:", error.response.status);
-      console.error("Response headers:", error.response.headers);
-    } else if (error.request) {
-      console.error("Request made but no response received");
-    } else {
-      console.error("Error setting up request:", error.message);
+      'Content-Type': 'application/json'
     }
-    
-    // Try the proxy endpoint as a fallback
-    console.log("Trying proxy endpoint as fallback");
-    return axios({
-      method: 'post',
-      url: `${baseURL}/api/proxy/admin/login`,
-      data: formData,
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      },
-      withCredentials: false
-    });
   });
 };
 

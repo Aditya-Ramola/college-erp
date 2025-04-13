@@ -307,21 +307,15 @@ const allowedOrigins = [
 
 // CORS setup - simplified direct approach
 app.use((req, res, next) => {
-  const origin = req.headers.origin;
-  
-  // Always allow the frontend domain
-  if (origin === 'https://college-erp-4dle.vercel.app') {
-    res.header('Access-Control-Allow-Origin', origin);
-  } else {
-    // For development or testing
-    res.header('Access-Control-Allow-Origin', '*');
-  }
-  
+  // Set CORS headers for all responses
+  res.header('Access-Control-Allow-Origin', 'https://college-erp-4dle.vercel.app');
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
   res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin');
   res.header('Access-Control-Allow-Credentials', 'true');
+  res.header('Access-Control-Max-Age', '86400');
   
   if (req.method === 'OPTIONS') {
+    // For OPTIONS requests, just send the headers and return
     return res.status(204).end();
   }
   
@@ -673,17 +667,7 @@ export default async function handler(req, res) {
   
   // Set CORS headers first - before anything else
   // This ensures headers are set even if errors occur later
-  const origin = req.headers.origin;
-  console.log("Request origin:", origin);
-  
-  // Always allow the frontend domain
-  if (origin === 'https://college-erp-4dle.vercel.app') {
-    res.setHeader('Access-Control-Allow-Origin', origin);
-  } else {
-    // For development or testing
-    res.setHeader('Access-Control-Allow-Origin', '*');
-  }
-  
+  res.setHeader('Access-Control-Allow-Origin', 'https://college-erp-4dle.vercel.app');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin');
   res.setHeader('Access-Control-Allow-Credentials', 'true');

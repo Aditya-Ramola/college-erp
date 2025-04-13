@@ -29,15 +29,36 @@ import { navigateWithoutLoop } from "../../utils/navigation";
 
 export const adminSignIn = (formData, navigate) => async (dispatch) => {
   try {
+    console.log("Admin login attempt with:", formData.username);
+    
+    // Clear any previous errors
+    dispatch({ type: SET_ERRORS, payload: {} });
+    
     const { data } = await api.adminSignIn(formData);
+    
+    // Save user data to local storage for persistence
+    localStorage.setItem("user", JSON.stringify(data));
+    
+    // Dispatch login action with data
     dispatch({ type: ADMIN_LOGIN, data });
+    
+    console.log("Login successful:", data);
+    
+    // Navigate based on password update status
     if (data.result.passwordUpdated) {
       navigateWithoutLoop(navigate, "/admin/home");
     } else {
       navigateWithoutLoop(navigate, "/admin/update/password");
     }
   } catch (error) {
-    const errorData = error.response && error.response.data ? error.response.data : { message: "An error occurred. Please try again." };
+    console.error("Admin login error:", error);
+    
+    // Create a user-friendly error message
+    const errorData = 
+      error.response && error.response.data 
+        ? error.response.data 
+        : { message: "Network error. Please check your connection and try again." };
+    
     dispatch({ type: SET_ERRORS, payload: errorData });
   }
 };
