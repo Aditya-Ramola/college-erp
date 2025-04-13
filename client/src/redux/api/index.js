@@ -1,7 +1,7 @@
 import axios from "axios";
 
 // Determine the API base URL based on environment
-let baseURL = process.env.REACT_APP_API_URL;
+let baseURL = process.env.REACT_APP_API_URL || '';
 console.log("API Base URL:", baseURL); // Debug log
 
 // Clean up the URL to ensure it doesn't have trailing slashes
@@ -9,28 +9,19 @@ if (baseURL && baseURL.endsWith('/')) {
   baseURL = baseURL.slice(0, -1);
 }
 
-// If API URL is not set, use relative URLs in production or localhost in development
-if (!baseURL) {
-  baseURL = process.env.NODE_ENV === 'production' 
-    ? '' // Empty for production since we'll use full paths
-    : 'http://localhost:5001'; // Use localhost in development
-}
-
-// Create API instance with environment variable for server URL
+// Create API instance
 const API = axios.create({ 
   baseURL,
   headers: {
     'Content-Type': 'application/json',
   },
-  withCredentials: false // Important for CORS
+  withCredentials: false
 });
 
 // Debug requests
 API.interceptors.request.use(
   (config) => {
-    console.log(`Making ${config.method.toUpperCase()} request to: ${config.baseURL}${config.url}`);
-    // Make sure we're sending the correct content type for all requests
-    config.headers['Content-Type'] = 'application/json';
+    console.log(`Making ${config.method.toUpperCase()} request to: ${config.url}`);
     return config;
   },
   (error) => {
@@ -94,14 +85,10 @@ API.interceptors.response.use(
   }
 );
 
-// Admin login - simple, direct approach
+// Admin login
 export const adminSignIn = (formData) => {
   console.log("Admin login attempt with:", formData.username);
-  return axios.post(`${baseURL}/api/admin/login`, formData, {
-    headers: {
-      'Content-Type': 'application/json'
-    }
-  });
+  return API.post("/api/admin/login", formData);
 };
 
 // Rest of the exports
