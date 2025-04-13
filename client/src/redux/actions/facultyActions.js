@@ -22,7 +22,8 @@ export const facultySignIn = (formData, navigate) => async (dispatch) => {
       navigateWithoutLoop(navigate, "/faculty/password");
     }
   } catch (error) {
-    dispatch({ type: SET_ERRORS, payload: error.response.data });
+    const errorData = error.response && error.response.data ? error.response.data : { message: "An error occurred. Please try again." };
+    dispatch({ type: SET_ERRORS, payload: errorData });
   }
 };
 

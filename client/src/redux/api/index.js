@@ -1,9 +1,17 @@
 import axios from "axios";
 
+// Determine the API base URL based on environment
+let baseURL = process.env.REACT_APP_API_URL;
+
+// If API URL is not set, use relative URLs in production or localhost in development
+if (!baseURL) {
+  baseURL = process.env.NODE_ENV === 'production' 
+    ? '/api' // Use relative path in production
+    : 'http://localhost:5001'; // Use localhost in development
+}
+
 // Create API instance with environment variable for server URL
-const API = axios.create({ 
-  baseURL: process.env.REACT_APP_API_URL || "http://localhost:5001/"
-});
+const API = axios.create({ baseURL });
 
 /**
  * Request interceptor to add authorization header with JWT token

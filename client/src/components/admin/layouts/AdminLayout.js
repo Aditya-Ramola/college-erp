@@ -12,6 +12,7 @@ import Sidebar from "../Sidebar";
 const AdminLayout = ({ children }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const isMobile = useMediaQuery('(max-width:768px)');
+  const isTablet = useMediaQuery('(max-width:1024px)');
   
   // Toggle mobile sidebar
   const toggleMobileMenu = () => {
@@ -30,8 +31,13 @@ const AdminLayout = ({ children }) => {
             setMobileMenuOpen={setMobileMenuOpen} 
           />
           
-          <div className={`flex-1 transition-all duration-300 overflow-auto ${isMobile && mobileMenuOpen ? 'opacity-50' : 'opacity-100'}`}>
-            <div className="p-4">
+          <div 
+            className={`flex-1 transition-all duration-300 overflow-auto ${
+              isMobile && mobileMenuOpen ? 'opacity-50' : 'opacity-100'
+            }`}
+            onClick={() => isMobile && mobileMenuOpen && setMobileMenuOpen(false)}
+          >
+            <div className={`${isMobile ? 'p-2' : 'p-4'}`}>
               {children}
             </div>
           </div>
