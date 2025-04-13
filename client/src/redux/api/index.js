@@ -97,19 +97,35 @@ API.interceptors.response.use(
 // Admin login - handle specially with full URL to avoid CORS issues
 export const adminSignIn = (formData) => {
   console.log("Admin login attempt with:", formData.username);
+  
+  // Try the direct login endpoint with specific CORS handling
   return axios({
     method: 'post',
     url: `${baseURL}/api/admin/login`,
     data: formData,
     headers: {
       'Content-Type': 'application/json',
-      'Accept': 'application/json'
+      'Accept': 'application/json',
+      'Origin': window.location.origin
     },
     mode: 'cors',
-    withCredentials: false,
-    validateStatus: function (status) {
-      return status >= 200 && status < 600; // Allow all status codes to be handled without error
-    }
+    withCredentials: false
+  }).catch(error => {
+    console.log("First login attempt failed, trying proxy endpoint:", error.message);
+    
+    // If that fails, try the proxy endpoint
+    return axios({
+      method: 'post',
+      url: `${baseURL}/api/proxy/admin/login`,
+      data: formData,
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Origin': window.location.origin
+      },
+      mode: 'cors',
+      withCredentials: false
+    });
   });
 };
 
@@ -204,3 +220,29 @@ export const getAttendance = (attendance) =>
 // Student registration endpoint
 export const registerStudent = (studentData) =>
   API.post("/api/student/register", studentData);
+
+// Debug and test endpoints
+export const testAdminCredentials = (credentials) => {
+  console.log("Testing admin credentials for:", credentials.username);
+  return axios({
+    method: 'post',
+    url: `${baseURL}/api/debug`,
+    data: credentials,
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      'Origin': window.location.origin
+    }
+  });
+};
+
+export const checkApiHealth = () => {
+  return axios({
+    method: 'get',
+    url: `${baseURL}/api/debug`,
+    headers: {
+      'Accept': 'application/json',
+      'Origin': window.location.origin
+    }
+  });
+};

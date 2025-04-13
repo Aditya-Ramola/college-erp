@@ -51,15 +51,32 @@ const connectToDatabase = async () => {
 export default async function handler(req, res) {
   console.log("Admin login handler invoked:", req.method, req.url);
   
-  // Set CORS headers for all responses
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  // Define allowed origins
+  const allowedOrigins = [
+    'https://college-erp-4dle.vercel.app',
+    'https://college-erp-flame.vercel.app',
+    'http://localhost:3000'
+  ];
+  
+  // Get origin from request
+  const origin = req.headers.origin;
+  
+  // Set appropriate CORS headers based on origin
+  if (origin && allowedOrigins.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  } else {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+  }
+  
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Origin');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.setHeader('Access-Control-Max-Age', '86400'); // 24 hours
   
   // Handle OPTIONS request
   if (req.method === 'OPTIONS') {
     console.log("Handling OPTIONS preflight in admin-login");
-    res.status(200).end();
+    res.status(204).end();
     return;
   }
   
