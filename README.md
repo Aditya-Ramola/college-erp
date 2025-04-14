@@ -86,7 +86,7 @@ A comprehensive Enterprise Resource Planning system built for educational instit
 ## 🌐 Deployment
 
 The application is deployed on Vercel for easy access:
-- [Visit Live Demo]([https://college-erp-lovat.vercel.app/](https://college-erp-4dle.vercel.app/))
+- [Visit Live Demo](https://college-erp-lovat.vercel.app/](https://college-erp-4dle.vercel.app/)
 
 ## 🔮 Future Enhancements
 
